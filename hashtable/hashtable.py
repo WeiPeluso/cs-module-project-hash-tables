@@ -13,6 +13,15 @@ class HashTableEntry:
 MIN_CAPACITY = 8
 
 
+class LinkedList:
+    def __init__(self, head=None):
+        self.head = head
+
+    def add_to_head(self, node):
+        node.next = self.head
+        self.head = node
+
+
 class HashTable:
     """
     A hash table that with `capacity` buckets
@@ -25,7 +34,7 @@ class HashTable:
         # Your code here
         self.capacity = capacity
         self.size = 0
-        self.table = [None] * self.capacity
+        self.table = [LinkedList()] * self.capacity
 
     def get_num_slots(self):
         """
@@ -88,7 +97,15 @@ class HashTable:
         """
         # Your code here
         index = self.hash_index(key)
-        self.table[index] = value
+        curr = self.table[index].head
+        while curr:
+            if curr.key == key:
+                curr.value = value
+            curr = curr.next
+
+        new_entry = HashTableEntry(key, value)
+        self.table[index].add_to_head(new_entry)
+        self.size += 1
 
     def delete(self, key):
         """
@@ -99,8 +116,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        index = self.hash_index(key)
-        self.table[index] = None
+        self.put(key, None)
+        self.size -= 1
 
     def get(self, key):
         """
@@ -112,7 +129,13 @@ class HashTable:
         """
         # Your code here
         index = self.hash_index(key)
-        return self.table[index]
+        curr = self.table[index].head
+
+        while curr:
+            if curr.key == key:
+                return curr.value
+            curr = curr.next
+        return None
 
     def resize(self, new_capacity):
         """
@@ -122,7 +145,15 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        pass
+        if self.get_load_factor() >= 0.7:
+            old_table = self.table
+            self.table = [LinkedList()] * new_capacity
+            for item in old_table:
+                curr = item.head
+                while curr:
+                    self.put(curr.key, curr.value)
+                    curr = curr.next
+                self.capacity = new_capacity
 
 
 if __name__ == "__main__":
